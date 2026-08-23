@@ -18,6 +18,10 @@ export function GamePlayerClient({ game }: { game: Game }) {
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
+    window.scrollTo({ top: 0, behavior: "instant" });
+  }, []);
+
+  useEffect(() => {
     if (over || paused) return;
     const t = setInterval(() => {
       setScore((s) => {
