@@ -1,6 +1,6 @@
 # 03 — Port Asteroids Game ("ROCAS")
 
-**State:** Approved
+**State:** Implemented
 **Depends on:** SPEC 01, SPEC 02
 **Date:** 2026-08-23
 

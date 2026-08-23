@@ -1,4 +1,4 @@
-import { PLAYERS } from "./users";
+import { createClient } from "@/lib/supabase/client";
 
 export type ScoreEntry = {
   id: string;
@@ -8,35 +8,38 @@ export type ScoreEntry = {
   createdAt: string;
 };
 
-function seededScores(seed: number, count = 12) {
-  let s = seed;
-  const rand = () => (s = (s * 9301 + 49297) % 233280) / 233280;
-  const used = new Set<string>();
-  const rows: { rank: number; name: string; score: number; date: string }[] = [];
-  for (let i = 0; i < count; i++) {
-    let name: string;
-    do {
-      name = PLAYERS[Math.floor(rand() * PLAYERS.length)];
-    } while (used.has(name) && used.size < PLAYERS.length);
-    used.add(name);
-    const base = Math.floor(50000 + rand() * 250000);
-    const score = base - i * Math.floor(2000 + rand() * 4000);
-    const day = String(1 + Math.floor(rand() * 28)).padStart(2, "0");
-    const mon = String(1 + Math.floor(rand() * 12)).padStart(2, "0");
-    rows.push({ rank: i + 1, name, score: Math.max(score, 1000), date: `${day}/${mon}/2026` });
-  }
-  return rows.sort((a, b) => b.score - a.score).map((r, i) => ({ ...r, rank: i + 1 }));
+type ScoreRow = {
+  id: string;
+  game_id: string;
+  player_name: string;
+  score: number;
+  created_at: string;
+};
+
+function toScoreEntry(row: ScoreRow): ScoreEntry {
+  return {
+    id: row.id,
+    gameId: row.game_id,
+    playerName: row.player_name,
+    score: row.score,
+    createdAt: row.created_at,
+  };
 }
 
-export async function getLeaderboard(gameId: string, limit = 12): Promise<ScoreEntry[]> {
-  const seed = gameId.length * 17 + 3;
-  return seededScores(seed, limit).map((row) => ({
-    id: `${gameId}_${row.rank}`,
-    gameId,
-    playerName: row.name,
-    score: row.score,
-    createdAt: row.date,
-  }));
+export async function getLeaderboard(
+  gameId: string,
+  limit = 12,
+): Promise<ScoreEntry[]> {
+  const supabase = createClient();
+  const { data, error } = await supabase
+    .from("scores")
+    .select("*")
+    .eq("game_id", gameId)
+    .order("score", { ascending: false })
+    .limit(limit);
+
+  if (error) throw error;
+  return (data as ScoreRow[]).map(toScoreEntry);
 }
 
 export async function saveScore(entry: {
@@ -44,11 +47,17 @@ export async function saveScore(entry: {
   playerName: string;
   score: number;
 }): Promise<ScoreEntry> {
-  return {
-    id: `score_${Date.now()}`,
-    gameId: entry.gameId,
-    playerName: entry.playerName,
-    score: entry.score,
-    createdAt: new Date().toISOString(),
-  };
+  const supabase = createClient();
+  const { data, error } = await supabase
+    .from("scores")
+    .insert({
+      game_id: entry.gameId,
+      player_name: entry.playerName,
+      score: entry.score,
+    })
+    .select()
+    .single();
+
+  if (error) throw error;
+  return toScoreEntry(data as ScoreRow);
 }
