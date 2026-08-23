@@ -1,6 +1,6 @@
 # 02 — Supabase Integration (Base Setup)
 
-**State:** Approved
+**State:** Implemented
 **Depends on:** none
 **Date:** 2026-08-23
 
