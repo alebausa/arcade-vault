@@ -50,6 +50,10 @@ npm run lint     # ESLint (flat config, eslint-config-next core-web-vitals + typ
 
 No test runner is configured yet.
 
+## Skills
+
+Always use `/frontend-design` to design user interfaces.
+
 ## Architecture notes
 
 - Next.js **16.3.2** App Router, React **19.2.8**, Tailwind CSS **4** (via
