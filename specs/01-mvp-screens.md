@@ -1,6 +1,6 @@
 # 01 — MVP Screens (Visual Port)
 
-**State:** Approved
+**State:** Implemented
 **Depends on:** none
 **Date:** 2026-08-23
 
